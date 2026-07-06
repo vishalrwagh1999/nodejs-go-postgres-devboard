@@ -11,9 +11,8 @@ jobs:
       - name: code checkout
         uses: actions/checkout@v6
       
-
       - name: setup nodejs
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: npm
@@ -23,7 +22,7 @@ jobs:
         run: npm ci               # Use 'npm ci' for reliable, deterministic builds
         working-directory: frontend
 
-      - name: Rung linting for node js
+      - name: Run linting for node js
         run: npm run lint               # Runs your local package.json lint script
         working-directory: frontend
 
