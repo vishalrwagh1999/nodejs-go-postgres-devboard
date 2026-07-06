@@ -1,0 +1,11 @@
+# this files will do the complete CI production ready security scanning for this project
+name: DevSecOps
+on:
+    push:
+        branches:
+            - main
+jobs:
+    code-linting:
+        runs-on: ubuntu-latest    
+        steps:
+            - uses: ./.github/workflows/code-lint.yml
