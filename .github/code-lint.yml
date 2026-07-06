@@ -1,0 +1,30 @@
+#this will do the linting for the code in nodejs and go language
+
+name: Code Lint
+on: 
+  workflow_call:
+
+jobs:
+  code-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: code checkout
+        uses: actions/checkout@v6
+      
+
+      - name: setup nodejs
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+          working-direcory: frontend
+      
+      - name: Install Dependencies
+        run: npm ci               # Use 'npm ci' for reliable, deterministic builds
+        working-directory: frontend
+
+      - name: Rung linting for node js
+        run: npm run lint               # Runs your local package.json lint script
+        working-directory: frontend
+
