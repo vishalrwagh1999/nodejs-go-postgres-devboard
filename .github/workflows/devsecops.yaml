@@ -6,4 +6,6 @@ on:
             - main
 jobs:
     code-linting:
-        uses: ./.github/workflows/code-lint.yml 
+        uses: ./.github/workflows/1-code-lint.yml
+    code-linting:
+        uses: ./.github/workflows/2-secret-scan.yml
