@@ -23,7 +23,9 @@ jobs:
               run: npm install --legacy-peer-deps
               working-directory: frontend
 
-            - name: Run Linter
+            - name: Run Linter  #Unused variables, Undefined variables, Code style violations React-specific rules (if eslint-plugin-react is configured) Import/export issues
+
+
               run: npm run lint
               working-directory: frontend
 
@@ -34,10 +36,10 @@ jobs:
                 go-version-file: 'go.mod'
                 cache-dependency-path: go.sum
             
-            - name: Run Go Formatter
+            - name: Run Go Formatter  # formatting and import ordering
               run: go fmt
               working-directory: backend
 
-            - name: Run Go Vet
+            - name: Run Go Vet  # suspicious code constructs (e.g. wrong format strings)
               run: go vet
               working-directory: backend
