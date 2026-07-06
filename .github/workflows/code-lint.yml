@@ -1,28 +1,43 @@
-#this will do the linting for the code in nodejs and go language
+# Goal - I have to do SAST for my Code
 
-name: Code Lint
-on: 
-  workflow_call:
+name: Code Quality
+
+on:
+    workflow_call:  # you can call this workflow before/after any other workflow
 
 jobs:
-  code-lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: code checkout
-        uses: actions/checkout@v6
-      
-      - name: setup nodejs
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-      
-      - name: Install Dependencies
-        run: npm ci               # Use 'npm ci' for reliable, deterministic builds
-        working-directory: frontend
+    sast:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Code Checkout
+              uses: actions/checkout@v7
+            
+            - name: Setup NodeJs
+              uses: actions/setup-node@v6
+              with:
+                node-version: '20'
+                cache: npm
+                cache-dependency-path: frontend/package-lock.json
+            
+            - name: Install npm Packages
+              run: npm install --legacy-peer-deps
+              working-directory: frontend
 
-      - name: Run linting for node js
-        run: npm run lint               # Runs your local package.json lint script
-        working-directory: frontend
+            - name: Run Linter
+              run: npm run lint
+              working-directory: frontend
 
+            - name: Setup Go
+              uses: actions/setup-go@v6
+              with:
+                go-version: '1.23'
+                go-version-file: 'go.mod'
+                cache-dependency-path: go.sum
+            
+            - name: Run Go Formatter
+              run: go fmt
+              working-directory: backend
+
+            - name: Run Go Vet
+              run: go vet
+              working-directory: backend
