@@ -6,6 +6,4 @@ on:
             - main
 jobs:
     code-linting:
-        runs-on: ubuntu-latest    
-        steps:
-            - uses: ./.github/workflows/code-lint.yml
+        uses: ./.github/workflows/code-lint.yml 
