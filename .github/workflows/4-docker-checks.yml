@@ -47,5 +47,5 @@ jobs:
                 ignore-unfixed: true
                 vuln-type: 'os,library'
                 severity: 'CRITICAL' #'CRITICAL,HIGH'
-                trivyignores: .trivyignore 
+                trivyignores: '.trivyignore'
 
