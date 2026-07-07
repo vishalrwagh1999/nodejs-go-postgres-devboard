@@ -20,3 +20,7 @@ jobs:
               env:
                 SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
                 SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+                with:
+        # This tells ngrok to bypass the browser warning page
+                args: >
+                    -Dsonar.ws.additionalHeaders="ngrok-skip-browser-warning:true"
