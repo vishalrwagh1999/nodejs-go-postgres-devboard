@@ -34,6 +34,17 @@ jobs:
             #    password: ${{ secrets.AZURE_CLIENT_SECRET }}                          password: ${{ secrets.GITHUB_TOKEN }}    password: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
             - name: Docker Build ${{ matrix.folders }}
-              run: docker build -t ${{ vars.DOCKERHUB_USERNAME }}/${{ matrix.folders }}-devboard:latest .
+              run: docker build -t ${{ vars.DOCKERHUB_USERNAME }}/devboard-${{ matrix.folders }}:${{ github.sha }} .
+            # run: docker build -t docker.io/my-organization/my-app:${{ github.sha }} .
               working-directory: ${{ matrix.folders }}
+
+            - name: Run Trivy vulnerability scanner
+              uses: aquasecurity/trivy-action@v0.36.0
+              with:
+                image-ref: ${{ vars.DOCKERHUB_USERNAME }}/devboard-${{ matrix.folders }}:${{ github.sha }}
+                format: 'table'
+                exit-code: '1'
+                ignore-unfixed: true
+                vuln-type: 'os,library'
+                severity: 'CRITICAL,HIGH' 
 
