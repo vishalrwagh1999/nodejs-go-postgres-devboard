@@ -47,6 +47,6 @@ jobs:
                 ignore-unfixed: true
                 vuln-type: 'os,library'
                 severity: 'CRITICAL' #'CRITICAL,HIGH'
-                #trivyignores: .trivyignore     frontend/.trivyignore, backend/.trivyignore): Trivy is looking at the root and missing them.
-                trivyignores: ${{ github.workspace }}/.trivyignore
+                trivyignores: .trivyignore    # frontend/.trivyignore, backend/.trivyignore): Trivy is looking at the root and missing them.
+                #trivyignores: ${{ github.workspace }}/.trivyignore # ERROR: cannot find ignorefile '/home/runner/work/nodejs-go-postgres-devboard/nodejs-go-postgres-devboard/.trivyignore'.
 
