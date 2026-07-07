@@ -10,4 +10,4 @@ jobs:
     code-scan-gitleaks-nodejs-go:
         uses: ./.github/workflows/2-secret-scan.yml
     dependency-check-nodejs-go:
-        uses: ./.github/workflows/3-dependency-check.yml
+        uses: ./.github/workflows/3-dependency.yml
