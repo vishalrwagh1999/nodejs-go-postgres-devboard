@@ -1,0 +1,19 @@
+# this scans the SAST static code using sonar qube which has set op rules for all codes. like a cheting of notebook rules.
+name: Sonar SAST scan
+on:
+    workflow_call:
+jobs:
+    sonar-scan:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Code Checkout
+              uses: actions/checkout@v6
+              with:
+                # Disabling shallow clones is recommended for improving the relevancy of reporting
+                fetch-depth: 0    
+              
+            - name: SonarQube Scan
+              uses: SonarSource/sonarqube-scan-action@v8.2.0 # Ex: v4.1.0 or sha1, See the latest version at https://github.com/marketplace/actions/official-sonarqube-scan
+              env:
+                SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+                SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
