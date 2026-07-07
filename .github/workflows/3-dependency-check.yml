@@ -20,6 +20,10 @@ jobs:
                 cache: npm
                 cache-dependency-path: frontend/package-lock.json
 
+            - name: Install npm Packages
+              run: npm ci --legacy-peer-deps
+              working-directory: frontend
+
             - name: Run NPM Audit
               run: npm audit --audit-level=high  #only high level it will capture   # run: npm audit
               working-directory: frontend
@@ -44,6 +48,7 @@ jobs:
             - name: Run Govulncheck
               uses: golang/govulncheck-action@v1
               with:
+                path: ./backend
                 go-package: ./... # Scans all packages in the repository recursively
                 output-format: text #by default
                 output-file: govulncheck-report.txt # need to add report where it should be generated.

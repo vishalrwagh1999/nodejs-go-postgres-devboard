@@ -5,9 +5,9 @@ on:
         branches:
             - main
 jobs:
-    code-linting:
+    code-linting-nodejs-go:
         uses: ./.github/workflows/1-code-lint.yml
-    code-scan-gitleaks:
+    code-scan-gitleaks-nodejs-go:
         uses: ./.github/workflows/2-secret-scan.yml
-    dependency-check:
+    dependency-check-nodejs-go:
         uses: ./.github/workflows/3-dependency-check.yml
