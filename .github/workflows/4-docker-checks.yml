@@ -47,5 +47,6 @@ jobs:
                 ignore-unfixed: true
                 vuln-type: 'os,library'
                 severity: 'CRITICAL' #'CRITICAL,HIGH'
-                trivyignores: '.trivyignore'
+                #trivyignores: .trivyignore     frontend/.trivyignore, backend/.trivyignore): Trivy is looking at the root and missing them.
+                trivyignores: ${{ github.workspace }}/.trivyignore
 
