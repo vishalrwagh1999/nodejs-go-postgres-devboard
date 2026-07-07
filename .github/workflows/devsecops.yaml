@@ -12,5 +12,5 @@ jobs:
     dependency-check-nodejs-go:
         uses: ./.github/workflows/3-dependency.yml
     docker-linting-build-trivy-checks:
-        uses: ./.github/workflows/3-dependency.yml
+        uses: ./.github/workflows/4-docker-checks.yml
         secrets: inherit
