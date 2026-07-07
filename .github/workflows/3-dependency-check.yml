@@ -8,10 +8,10 @@ on:
 jobs:
     dependency-check:
         runs-on: ubuntu-latest
-        timeout-minutes: 15  # kills job if it hangs, prevents wasted runner minutes
-        permissions:
-            contents: read   # least privilege - only needs to read code
-            actions: read    # needed for uploading artifacts
+        #timeout-minutes: 15  # kills job if it hangs, prevents wasted runner minutes
+        #permissions:
+           # contents: read   # least privilege - only needs to read code
+           # actions: read    # needed for uploading artifacts
         steps:
 
             - name: checkout the code
