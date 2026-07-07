@@ -8,36 +8,40 @@ on:
 jobs:
     dependency-check:
         runs-on: ubuntu-latest
+        timeout-minutes: 15  # kills job if it hangs, prevents wasted runner minutes
+        permissions:
+            contents: read   # least privilege - only needs to read code
+            actions: read    # needed for uploading artifacts
         steps:
 
             - name: checkout the code
-              uses: actions/checkout@v4
+              uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2 - SHA pinned for supply chain security
 
             - name: Setup NodeJs
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4.1.0 - SHA pinned
               with:
                 node-version: '24' #20
                 cache: npm
                 cache-dependency-path: frontend/package-lock.json
 
             - name: Run NPM Audit
-              # Fixed: Added directory creation and output redirection to create the file, added || true so the workflow doesn't break before saving the report
+              # --audit-level=high fails pipeline on high/critical vulnerabilities
+              # tee saves report to file AND shows output in logs
               run: |
                 mkdir -p ../reports
-                npm audit > ../reports/dependency-report.txt || true #npm audit --audit-level=high  #only high level it will capture   # run: npm audit
+                npm audit --audit-level=high 2>&1 | tee ../reports/dependency-report.txt
               working-directory: frontend
-            
-            - name: Upload Report to Artifacts
-              if: always() # Ensures report uploads even if tests fail
-              uses: actions/upload-artifact@v4 # Fixed: Downgraded from v7 to standard v4
+
+            - name: Upload NPM Audit Report
+              if: always() # Ensures report uploads even if audit fails
+              uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08  # v4.6.0 - SHA pinned
               with:
                 name: dependency-scan-report
                 path: reports/dependency-report.txt
                 retention-days: 5
 
-            
             - name: Setup Go
-              uses: actions/setup-go@v5
+              uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34  # v5.3.0 - SHA pinned
               with:
                   go-version-file: 'backend/go.mod'
                   cache-dependency-path: backend/go.sum
@@ -52,19 +56,20 @@ jobs:
             #    output-format: text      #by default
             #    output-file: govulncheck-report.txt # need to add report where it should be generated.
             # or above step
-            
+
             # Fixed: Added CLI installation step so govulncheck tool exists on the runner
             - name: Install Govulncheck
-              run: go install golang.org/x/vuln/cmd/govulncheck@latest
+              run: go install golang.org/x/vuln/cmd/govulncheck@v1.1.4  # pinned version, @latest can break anytime
 
             - name: GoVulncheck
-              continue-on-error: true
-              run: govulncheck ./... > govulncheck-report.txt
+              # exit code 3 means vulnerabilities found - fails pipeline intentionally in production
+              # remove continue-on-error so critical CVEs block the pipeline
+              run: govulncheck ./... > govulncheck-report.txt 2>&1  # capture both stdout and stderr
               working-directory: backend
 
             - name: Upload Govulncheck Report
-              if: always()
-              uses: actions/upload-artifact@v4
+              if: always() # upload report even if govulncheck found vulnerabilities
+              uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08  # v4.6.0 - SHA pinned
               with:
                 name: govulncheck-findings
                 path: backend/govulncheck-report.txt
