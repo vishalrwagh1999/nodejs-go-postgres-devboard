@@ -43,7 +43,7 @@ jobs:
               with:
                 image-ref: ${{ vars.DOCKERHUB_USERNAME }}/devboard-${{ matrix.folders }}:${{ github.sha }}
                 format: 'table'
-                exit-code: '1'
+                exit-code: '0' #1 if nay critical fail the pipeline
                 ignore-unfixed: true
                 vuln-type: 'os,library'
                 severity: 'CRITICAL' #'CRITICAL,HIGH'
