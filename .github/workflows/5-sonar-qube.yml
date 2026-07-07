@@ -15,12 +15,21 @@ jobs:
               run: | 
                 echo "SONAR_HOST_URL=${{ secrets.SONAR_HOST_URL || env.SONAR_HOST_URL || '' }}" curl -v --max-time 10 "${{ secrets.SONAR_HOST_URL }}" || true curl -v --max-time 10 "${{ secrets.SONAR_HOST_URL }}/api/v2/analysis/version" || true
               
-            - name: SonarQube Scan
-              uses: SonarSource/sonarqube-scan-action@v8.2.0 # Ex: v4.1.0 or sha1, See the latest version at https://github.com/marketplace/actions/official-sonarqube-scan
-              env:
-                SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-                SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-                with:
+            #- name: SonarQube Scan
+             # uses: SonarSource/sonarqube-scan-action@v8.2.0 # Ex: v4.1.0 or sha1, See the latest version at https://github.com/marketplace/actions/official-sonarqube-scan
+            #  env:
+             #   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+            #    SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+             #   with:
         # This tells ngrok to bypass the browser warning page
-                args: >
-                    -Dsonar.ws.additionalHeaders="ngrok-skip-browser-warning:true"
+             #   args: >
+                #    -Dsonar.ws.additionalHeaders="ngrok-skip-browser-warning:true"
+            - name: Run Sonar Scanner
+              run: |
+                sonar-scanner \
+                  -Dsonar.projectKey=nodejs-go-postgres-devboard \
+                  -Dsonar.projectName=nodejs-go-postgres-devboard \
+                  -Dsonar.sources=backend,frontend \
+                  -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+                  -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
+                  -Dsonar.ws.additionalHeaders="ngrok-skip-browser-warning:true"
