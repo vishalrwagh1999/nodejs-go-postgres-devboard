@@ -12,7 +12,8 @@ jobs:
                 # Disabling shallow clones is recommended for improving the relevancy of reporting
                 fetch-depth: 0    
             - name: check connectivity
-              run: | echo "SONAR_HOST_URL=${{ secrets.SONAR_HOST_URL || env.SONAR_HOST_URL || '' }}" curl -v --max-time 10 "${{ secrets.SONAR_HOST_URL }}" || true curl -v --max-time 10 "${{ secrets.SONAR_HOST_URL }}/api/v2/analysis/version" || true
+              run: | 
+                echo "SONAR_HOST_URL=${{ secrets.SONAR_HOST_URL || env.SONAR_HOST_URL || '' }}" curl -v --max-time 10 "${{ secrets.SONAR_HOST_URL }}" || true curl -v --max-time 10 "${{ secrets.SONAR_HOST_URL }}/api/v2/analysis/version" || true
               
             - name: SonarQube Scan
               uses: SonarSource/sonarqube-scan-action@v8.2.0 # Ex: v4.1.0 or sha1, See the latest version at https://github.com/marketplace/actions/official-sonarqube-scan
