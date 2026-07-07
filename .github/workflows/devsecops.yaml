@@ -9,3 +9,5 @@ jobs:
         uses: ./.github/workflows/1-code-lint.yml
     code-scan-gitleaks:
         uses: ./.github/workflows/2-secret-scan.yml
+    dependency-check:
+        uses: ./.github/workflows/3-dependency-check.yml

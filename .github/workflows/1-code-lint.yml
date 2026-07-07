@@ -9,37 +9,36 @@ jobs:
     sast:
         runs-on: ubuntu-latest
         steps:
-            - name: Code Checkout
-              uses: actions/checkout@v7
-            
-            - name: Setup NodeJs
-              uses: actions/setup-node@v6
-              with:
-                node-version: '20'
-                cache: npm
-                cache-dependency-path: frontend/package-lock.json
-            
-            - name: Install npm Packages
-              run: npm ci
-              working-directory: frontend
+          
+          - name: Code Checkout
+            uses: actions/checkout@v7
 
-            - name: Run Linter  #Unused variables, Undefined variables, Code style violations React-specific rules (if eslint-plugin-react is configured) Import/export issues
+          - name: Setup NodeJs
+            uses: actions/setup-node@v6
+            with:
+              node-version: '20'
+              cache: npm
+              cache-dependency-path: frontend/package-lock.json
 
+          - name: Install npm Packages
+            run: npm ci --legacy-peer-deps
+            working-directory: frontend
 
-              run: npm run lint
-              working-directory: frontend
+          - name: Run Linter  #Unused variables, Undefined variables, Code style violations React-specific rules (if eslint-plugin-react is configured) Import/export issues
+            run: npm run lint
+            working-directory: frontend
 
-            - name: Setup Go
-              uses: actions/setup-go@v6
-              with:
+          - name: Setup Go
+            uses: actions/setup-go@v6
+            with:
                 go-version: '1.23'
                 go-version-file: 'go.mod'
                 cache-dependency-path: go.sum
-            
-            - name: Run Go Formatter  # formatting and import ordering
-              run: go fmt ./...
-              working-directory: backend
+                
+          - name: Run Go Formatter  # formatting and import ordering
+            run: go fmt ./...
+            working-directory: backend
 
-            - name: Run Go Vet  # suspicious code constructs (e.g. wrong format strings)
-              run: go vet ./...
-              working-directory: backend
+          - name: Run Go Vet  # suspicious code constructs (e.g. wrong format strings)
+            run: go vet ./...
+            working-directory: backend
