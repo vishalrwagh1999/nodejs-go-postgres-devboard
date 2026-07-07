@@ -40,19 +40,19 @@ jobs:
                   cache-dependency-path: backend/go.sum
                   cache: true # Speeds up execution by caching go modules #by default its true
 
-            - name: Run Govulncheck
-              uses: golang/govulncheck-action@v1
-              with:
-                repo-checkout: false     # disable internal checkout, we already did it in first step
-                work-dir: backend        # fixed: was 'path' which is not a valid input
-                go-package: ./...        # Scans all packages in the repository recursively
-                output-format: text      #by default
-                output-file: govulncheck-report.txt # need to add report where it should be generated.
+            #- name: Run Govulncheck
+            #  uses: golang/govulncheck-action@v1
+            #  with:
+            #    repo-checkout: false     # disable internal checkout, we already did it in first step
+            #    work-dir: backend        # fixed: was 'path' which is not a valid input
+            #    go-package: ./...        # Scans all packages in the repository recursively
+            #    output-format: text      #by default
+            #    output-file: govulncheck-report.txt # need to add report where it should be generated.
             # or above step
-            #- name: GoVulncheck
-            #  continue-on-error: true
-            #  run: govulncheck ./... > govulncheck-report.txt
-            #  working-directory: backend
+            - name: GoVulncheck
+              continue-on-error: true
+              run: govulncheck ./... > govulncheck-report.txt
+              working-directory: backend
 
             - name: Upload Govulncheck Report
               if: always()
