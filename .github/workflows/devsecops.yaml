@@ -23,6 +23,11 @@ jobs:
         uses: ./.github/workflows/7-docker-push.yml
         secrets: inherit
     docker-deploy:
+        needs: [code-linting-nodejs-go, code-scan-gitleaks-nodejs-go, dependency-check-nodejs-go, docker-linting-build-trivy-checks, sonar-qube-checks, code-test-checks, dockerHub-image-push]
         uses: ./.github/workflows/8-deploy.yml
         secrets: inherit
     
+    dast-scan-OWASP-zap:
+        needs: [docker-deploy]
+        uses: ./.github/workflows/9-dast-scan.yml
+        secrets: inherit
