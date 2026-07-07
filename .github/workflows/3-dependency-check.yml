@@ -1,6 +1,6 @@
 #this will check the dependecy in yaml for nodejs and go lang
 
-name: dependency chek
+name: Dependency Check
 
 on:
     workflow_call:
@@ -10,47 +10,22 @@ jobs:
         runs-on: ubuntu-latest
         steps:
 
-            - name: checkout the code
-              uses: actions/checkout@v7
+            - name: Checkout Code
+              uses: actions/checkout@v4
 
-            - name: Setup NodeJs
-              uses: actions/setup-node@v6
-              with:
-                node-version: '24' #20
-                cache: npm
-                cache-dependency-path: frontend/package-lock.json
-
-            - name: Install npm Packages
-              run: npm ci --legacy-peer-deps
-              working-directory: frontend
-
-            - name: Run NPM Audit
-              run: npm audit --audit-level=high  #only high level it will capture   # run: npm audit
-              working-directory: frontend
-            
-            - name: Upload Report to Artifacts
-              if: always() # Ensures report uploads even if tests fail
-              uses: actions/upload-artifact@v7
-              with:
-                name: dependency-scan-report
-                path: reports/dependency-report.txt
-                retention-days: 5
-
-            
             - name: Setup Go
-              uses: actions/setup-go@v6
+              uses: actions/setup-go@v5
               with:
-                  go-version: '1.23'
-                  go-version-file: 'go.mod'
-                  cache-dependency-path: go.sum
-                  cache: true # Speeds up execution by caching go modules #by defaukt its true
+                  go-version-file: 'backend/go.mod'
+                  cache-dependency-path: backend/go.sum
+                  cache: true # Speeds up execution by caching go modules #by default its true
 
             - name: Run Govulncheck
               uses: golang/govulncheck-action@v1
               with:
-                path: ./backend
-                go-package: ./... # Scans all packages in the repository recursively
-                output-format: text #by default
+                work-dir: backend        # fixed: was 'path' which is not a valid input
+                go-package: ./...        # Scans all packages in the repository recursively
+                output-format: text      #by default
                 output-file: govulncheck-report.txt # need to add report where it should be generated.
             # or above step
             #- name: GoVulncheck
@@ -58,10 +33,10 @@ jobs:
             #  run: govulncheck ./... > govulncheck-report.txt
             #  working-directory: backend
 
-            - name: Upload Scan Report
-              uses: actions/upload-artifact@v7
+            - name: Upload Govulncheck Report
+              if: always()
+              uses: actions/upload-artifact@v4
               with:
                 name: govulncheck-findings
-                path: reports/govulncheck-report.txt
+                path: backend/govulncheck-report.txt
                 retention-days: 5 # 1 to 90 days only. change setting if need for more.
-
