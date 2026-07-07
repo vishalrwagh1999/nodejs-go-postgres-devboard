@@ -19,5 +19,10 @@ jobs:
         secrets: inherit
     code-test-checks:
         uses: ./.github/workflows/6-code-test.yml   
-    cdockerHub-image-push:
+    dockerHub-image-push:
         uses: ./.github/workflows/7-docker-push.yml
+        secrets: inherit
+    docker-deploy:
+        uses: ./.github/workflows/8-deploy.yml
+        secrets: inherit
+    
