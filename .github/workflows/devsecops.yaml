@@ -14,6 +14,6 @@ jobs:
     docker-linting-build-trivy-checks:
         uses: ./.github/workflows/4-docker-checks.yml
         secrets: inherit
-    sona-qube-checks:
+    sonar-qube-checks:
         uses: ./.github/workflows/5-sonar-qube.yml
         secrets: inherit
