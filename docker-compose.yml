@@ -9,6 +9,8 @@
 #
 # Bring it up:  docker compose up --build
 # Then open:    http://localhost:8080   (FRONTEND_HOST_PORT)
+#
+# For CD/deployment: export IMAGE_TAG="${{ github.sha }}" DOCKERHUB_USERNAME="your-user" && docker compose up
 
 services:
   postgres:
@@ -29,9 +31,9 @@ services:
       - "${POSTGRES_HOST_PORT}:5432"
 
   backend:
-    # build = local; image = the tag CI pushes and CD pulls (IMAGE_TAG, else latest).
+    # build = local; image = the tag CI pushes and CD pulls (IMAGE_TAG=github.sha from GitHub Actions).
     build: ./backend
-    image: ${{ vars.DOCKERHUB_USERNAME }}/devboard-backend:${IMAGE_TAG}
+    image: ${DOCKERHUB_USERNAME}/devboard-backend:${IMAGE_TAG}
     environment:
       PORT: "${BACKEND_PORT}"
       # Built from the Postgres vars above so the credentials live in one place.
@@ -44,7 +46,7 @@ services:
 
   frontend:
     build: ./frontend
-    image: ${{ vars.DOCKERHUB_USERNAME }}/devboard-frontend:${IMAGE_TAG}
+    image: ${DOCKERHUB_USERNAME}/devboard-frontend:${IMAGE_TAG}
     depends_on:
       - backend
     ports:
