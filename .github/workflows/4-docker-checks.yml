@@ -1,0 +1,22 @@
+# This file will scan the docker linting (hadoLint) - build the image - trivy scans the image
+
+name: Docker Checks
+
+on:
+    workflow_call:
+
+jobs:
+    docker-checks:
+        runs-on: ubuntu-latest        
+        strategy:
+            matrix: 
+                folders: [frontend ,backend]
+        steps:
+            - name: checkout the code
+              uses: actions/checkout@v4
+
+            - name: Lint Dockerfile for ${{ matrix.folders }}
+              uses: hadolint/hadolint-action@v3.1.0
+              with:
+                dockerfile: $${{ matrix.folders }}/Dockerfile
+
