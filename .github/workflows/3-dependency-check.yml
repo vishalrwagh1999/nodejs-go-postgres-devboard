@@ -21,7 +21,7 @@ jobs:
                 cache-dependency-path: frontend/package-lock.json
 
             - name: Run NPM Audit
-              run: npm audit --audit-level=high  #only high level it will capture   # run: npm audit
+              run: npm audit #npm audit --audit-level=high  #only high level it will capture   # run: npm audit
               working-directory: frontend
             
             - name: Upload Report to Artifacts
@@ -43,6 +43,7 @@ jobs:
             - name: Run Govulncheck
               uses: golang/govulncheck-action@v1
               with:
+                repo-checkout: false     # disable internal checkout, we already did it in first step
                 work-dir: backend        # fixed: was 'path' which is not a valid input
                 go-package: ./...        # Scans all packages in the repository recursively
                 output-format: text      #by default
