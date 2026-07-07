@@ -17,3 +17,5 @@ jobs:
     sonar-qube-checks:
         uses: ./.github/workflows/5-sonar-qube.yml
         secrets: inherit
+    code-test-checks:
+        uses: ./.github/workflows/6-code-test.yml   
