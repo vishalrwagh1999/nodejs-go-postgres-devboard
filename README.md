@@ -1,42 +1,47 @@
-# DevBoard — Advanced (UI + Go + Postgres)
+# DevBoard — React + Go + Postgres + DevSecOps Pipeline
 
-This is the same DevBoard UI as the `master` branch, but now the data comes
-from a **real backend** instead of fake in-memory data.
-
-Three pieces talk to each other:
+A full-stack project management dashboard with a production-grade DevSecOps CI/CD pipeline.
 
 ```
-browser  →  frontend (React)  →  backend (Go API)  →  database (Postgres)
+browser  →  frontend (React + Vite)  →  backend (Go + Gin)  →  database (Postgres)
 ```
 
-- **frontend** — the React app. It also forwards anything starting with `/api`
-  to the backend.
-- **backend** — a small Go program that reads and writes the database.
-- **database** — Postgres, with some example projects and tasks loaded on first
-  start.
+- **frontend** — React 18 app with TailwindCSS, Tanstack Query, Kanban board, and task management UI. Forwards `/api` requests to the backend.
+- **backend** — Go (Gin) REST API that reads/writes Postgres.
+- **database** — Postgres 16, seeded with example projects and tasks on first start.
 
-There's no login and no AI here on purpose. The whole point is to *see how the
-pieces connect*.
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 18, Vite, TailwindCSS, Tanstack Query, React Router |
+| Backend | Go 1.23, Gin, `lib/pq` |
+| Database | PostgreSQL 16 |
+| Testing | Vitest (frontend), `go test` (backend) |
+| Containerization | Docker, Docker Compose |
+| CI/CD | GitHub Actions (9-gate DevSecOps pipeline) |
+| SAST | SonarQube, ESLint, `go vet`, `go fmt` |
+| Secret Scan | Gitleaks |
+| SCA | npm audit, Govulncheck |
+| Container Scan | Trivy, Hadolint |
+| DAST | OWASP ZAP |
+| Registry | Docker Hub |
 
 ---
 
 ## What you need
 
-- **Docker** (with Docker Compose, which comes with Docker Desktop).
-- That's it. You do **not** need Node, Go, or Postgres installed — they all run
-  inside containers.
+- **Docker** with Docker Compose (comes with Docker Desktop). That's it — no Node, Go, or Postgres needed locally.
 
 ---
 
-## Part 1 — The manual way (do it by hand to understand it)
+## Part 1 — Manual way (understand the wiring)
 
-Run all commands from this folder. We'll start the three pieces one by one, the
-hard way, so you can see exactly what Docker Compose does for you later.
+Run all commands from the project root.
 
 ### Step 1: Create a network
-
-Containers can only find each other by name if they're on the **same network**.
-So first we make one:
 
 ```bash
 docker network create devboard-net
@@ -44,22 +49,12 @@ docker network create devboard-net
 
 ### Step 2: Build the images
 
-The frontend and backend are *our* code, so we build an image for each. The
-database is not our code — it's the official Postgres image — so there's
-nothing to build for it.
-
 ```bash
 docker build -t devboard-frontend ./frontend
 docker build -t devboard-backend ./backend
 ```
 
-The first build downloads base images and compiles the code, so it can take a
-few minutes. Later builds are much faster.
-
 ### Step 3: Run the database
-
-We name it `postgres`. The backend will look for it by that exact name. The
-`-v ./init/postgres:...` line loads the example data the first time it starts.
 
 ```bash
 docker run -d --name postgres --network devboard-net \
@@ -73,9 +68,6 @@ docker run -d --name postgres --network devboard-net \
 
 ### Step 4: Run the backend
 
-We name it `backend` (the frontend looks for this name). We also tell it how to
-reach the database with `POSTGRES_URL` — notice it uses the name `postgres`.
-
 ```bash
 docker run -d --name backend --network devboard-net \
   -e PORT=8080 \
@@ -86,192 +78,192 @@ docker run -d --name backend --network devboard-net \
 
 ### Step 5: Run the frontend
 
-It serves the app on port 4173 inside the container; we map it to 8080 on your
-machine.
-
 ```bash
 docker run -d --name frontend --network devboard-net \
   -p 8080:4173 \
   devboard-frontend
 ```
 
-### Step 6: Open it and check
+### Step 6: Open and verify
 
-Open **http://localhost:8080** in your browser — you should see the DevBoard
-dashboard with some example tasks. (If the page shows an error for a second on
-first load, the backend is still starting up — just refresh.)
-
-Then check the wiring from the terminal:
+Open **http://localhost:8080** — you should see the DevBoard dashboard.
 
 ```bash
-curl http://localhost:8081/health                      # backend says OK
+curl http://localhost:8081/health                       # backend health check
 curl "http://localhost:8080/api/tasks?project_id=1"    # app → backend → database
 ```
 
-### Step 7: Stop and clean up
+### Step 7: Clean up
 
 ```bash
 docker rm -f frontend backend postgres
 docker network rm devboard-net
 ```
 
-### The one thing to remember: names
-
-The backend finds the database using the name `postgres` (see `POSTGRES_URL`).
-The frontend finds the backend using the name `backend` (see
-`frontend/vite.config.js`). So those container **names must match**, and they
-only work because everything is on the same `devboard-net` network.
-
-That's a lot of typing, and you have to start them in the right order. This is
-exactly the problem Docker Compose solves.
+> The backend finds the database by the name `postgres` (via `POSTGRES_URL`). The frontend finds the backend by the name `backend` (via `frontend/vite.config.js`). Container names must match, and they only resolve because everything is on the same `devboard-net` network.
 
 ---
 
-## Part 2 — The easy way: Docker Compose
+## Part 2 — Docker Compose (the easy way)
 
-Compose does everything from Part 1 — the network, the names, the order, the
-environment values — from one file (`docker-compose.yml`).
+```bash
+cp .env.example .env        # one time only
+docker compose up --build
+```
 
-First, create your settings file (one time only). Compose reads it to fill in
-passwords and ports, so the stack won't start without it:
+Open **http://localhost:8080**. Stop with `docker compose down`.
+
+| Service  | URL | Notes |
+|---|---|---|
+| Frontend | http://localhost:8080 | React app; proxies `/api` to backend |
+| Backend  | http://localhost:8081/health | Go API |
+| Postgres | localhost:5432 | user/password: `devboard`/`devboard` |
+
+---
+
+## Part 3 — Makefile shortcuts
+
+```bash
+make           # list all commands
+make setup     # create .env (first time only)
+make up        # build and start everything
+make down      # stop everything
+make logs      # watch logs
+make reset     # wipe database and start fresh
+make smoke     # quick health check
+```
+
+`make up` creates `.env` automatically.
+
+---
+
+## Settings — `.env`
+
+All configurable values live in `.env`. Copy the template once:
 
 ```bash
 cp .env.example .env
 ```
 
-Then start everything with one command:
+| Variable | Default | Description |
+|---|---|---|
+| `POSTGRES_USER` | `devboard` | Postgres username |
+| `POSTGRES_PASSWORD` | `devboard` | Postgres password |
+| `POSTGRES_DB` | `devboard` | Database name |
+| `BACKEND_PORT` | `8080` | Port Go app listens on inside container |
+| `POSTGRES_HOST_PORT` | `5432` | Host port for Postgres |
+| `BACKEND_HOST_PORT` | `8081` | Host port for backend |
+| `FRONTEND_HOST_PORT` | `8080` | Host port for frontend |
+| `IMAGE_TAG` | `latest` | Docker image tag (CI uses `github.sha`) |
+| `DOCKERHUB_USERNAME` | — | Your Docker Hub username |
 
-```bash
-docker compose up --build
-```
-
-The first build can take a few minutes. When it's done, open
-**http://localhost:8080** in your browser.
-
-Stop it:
-
-```bash
-docker compose down
-```
-
-| Piece    | Open in browser / curl        | Notes                                   |
-| -------- | ----------------------------- | --------------------------------------- |
-| Frontend | http://localhost:8080         | the app; forwards `/api` to the backend |
-| Backend  | http://localhost:8081/health  | the Go API (the app uses it via `/api`) |
-| Postgres | localhost:5432                | user / password: `devboard` / `devboard`|
+`.env` is gitignored. `.env.example` is the committed template.
 
 ---
 
-## Part 3 — The shortcut: `make`
-
-You don't even have to remember the Compose commands. Run `make` to see what's
-available:
-
-```bash
-make           # list all commands
-make setup     # create your .env file (first time only)
-make up        # build and start everything
-make down      # stop everything
-make logs      # watch the logs
-make reset     # wipe the database and start fresh
-make smoke     # quick check that everything works
-```
-
-`make up` creates `.env` for you automatically, so it's the simplest way to start.
-
-> `make` is optional. It's already available on Linux and macOS (on macOS you may
-> need Xcode Command Line Tools: `xcode-select --install`). On Windows, either use
-> WSL or just run the `docker compose` commands from Part 2 directly.
-
----
-
-## Settings live in `.env`
-
-All the changeable values (passwords, ports) live in one file. The first time,
-copy the example:
-
-```bash
-cp .env.example .env     # or: make setup
-```
-
-`.env.example` is the template kept in git. Your real `.env` is ignored by git,
-so in a real project your secrets never get committed.
-
----
-
-## The API (for reference)
+## API Reference
 
 The browser calls these as `/api/...`; the backend serves them at the root.
 
-| Method | Path                      | What it does                          |
-| ------ | ------------------------- | ------------------------------------- |
-| GET    | `/projects`               | list projects                         |
-| POST   | `/projects`               | create a project                      |
-| GET    | `/tasks?project_id=N`     | list tasks in a project               |
-| POST   | `/tasks`                  | create a task                         |
-| PATCH  | `/tasks/:id`              | update a task (e.g. change status)    |
-| GET    | `/search?q=&project_id=N` | search tasks by title                 |
-| GET    | `/health`                 | health check                          |
-
-## Folder layout
-
-```
-.
-├── docker-compose.yml   starts frontend + backend + postgres together
-├── Makefile             short commands (make up, make down, ...)
-├── .env.example         template for settings (copy to .env)
-├── frontend/            React app (Vite). Serves the UI, forwards /api
-├── backend/             Go API (main.go + Dockerfile)
-└── init/postgres/       schema + example data, loaded on first start
-```
+| Method | Path | Description |
+|---|---|---|
+| GET | `/projects` | List all projects |
+| POST | `/projects` | Create a project |
+| GET | `/tasks?project_id=N` | List tasks in a project |
+| POST | `/tasks` | Create a task |
+| PATCH | `/tasks/:id` | Update a task (status, priority, etc.) |
+| GET | `/search?q=&project_id=N` | Search tasks by title |
+| GET | `/health` | Health check |
 
 ---
 
-## CI/CD DevSecOps Setup
+## DevSecOps CI/CD Pipeline
 
-The repository contains GitHub Actions workflows configured with SonarQube (SAST) and OWASP ZAP (DAST) scanning.
+Every `git push` to `main` triggers the full pipeline defined in [devsecops.yaml](.github/workflows/devsecops.yaml). It sequences **9 security gates** across modular reusable workflows before deploying.
 
-### How to Install and Set Up SonarQube on EC2
+| Gate | Workflow | Tool | What it does |
+|:---:|---|---|---|
+| 1 | `1-code-lint.yml` | ESLint, `go fmt`, `go vet` | Lints frontend JS/JSX and formats/vets Go code |
+| 2 | `2-secret-scan.yml` | Gitleaks | Scans full Git history for leaked secrets |
+| 3 | `3-dependency.yml` | npm audit, Govulncheck | Checks frontend and Go dependencies for known CVEs |
+| 4 | `4-docker-checks.yml` | Hadolint, Trivy | Lints Dockerfiles; builds and scans images for CRITICAL CVEs |
+| 5 | `5-sonar-qube.yml` | SonarQube | SAST scan across `backend/` and `frontend/` source |
+| 6 | `6-code-test.yml` | Vitest, `go test` | Runs frontend unit tests and Go backend tests |
+| 7 | `7-docker-push.yml` | Docker Hub | Builds and pushes `devboard-frontend` and `devboard-backend` images tagged with `github.sha` |
+| 8 | `8-deploy.yml` | Docker Compose (self-hosted runner) | Pulls latest images and redeploys via `docker compose up -d` |
+| 9 | `9-dast-scan.yml` | OWASP ZAP | Baseline DAST scan against the live deployed app |
 
-To run your own self-hosted SonarQube server on your AWS EC2 instance:
+Gates 1–7 run in parallel. Gate 8 (deploy) waits for all of them to pass. Gate 9 (DAST) runs after deploy.
 
-1. **Start the SonarQube Container**:
-   Ensure Docker is installed on your EC2 instance, then run:
-   ```bash
-   docker run -itd --name SonarQube-Server -p 9000:9000 sonarqube:community
-   ```
+All scan reports (dependency, Govulncheck, ZAP) are uploaded as **GitHub Actions Artifacts**.
 
-2. **Access the Web Interface**:
-   - Make sure port `9000` is open in your **AWS EC2 Security Group** inbound rules.
-   - Access `http://<YOUR_EC2_PUBLIC_IP>:9000` in your browser.
-   - Log in using default credentials: Username: `admin` / Password: `admin` (you will be prompted to change it)
+---
 
+## GitHub Actions Secrets & Variables
 
-### How to configure SonarQube Secrets
+### Repository Secrets
 
-To enable SonarQube scanning in your GitHub Actions pipeline:
+| Secret | Description |
+|---|---|
+| `DOCKERHUB_TOKEN` | Docker Hub Personal Access Token |
+| `SONAR_TOKEN` | SonarQube authentication token |
+| `SONAR_HOST_URL` | SonarQube server URL (e.g. `http://<ip>:9000`) |
+| `EC2_HOST` | Public IP of the deployment EC2 instance |
 
-1. **Get the Host URL**:
-   - If using a self-hosted instance, your `SONAR_HOST_URL` is the URL where SonarQube is hosted (e.g., `http://your-sonarqube-ip:9000`).
-   - If using SonarCloud, use `https://sonarcloud.io`.
-2. **Generate a SonarQube Token**:
-   - In SonarQube: Go to your **Profile (User Icon) > My Account > Security**.
-   - Under **Generate Tokens**, enter a token name, select the **User Token** type, and click **Generate**.
-   - Copy the generated token string.
-3. **Add Secrets to GitHub**:
-   - Go to your GitHub Repository settings.
-   - Navigate to **Settings > Secrets and variables > Actions**.
-   - Add two Repository Secrets:
-     - `SONAR_TOKEN`: Paste the SonarQube token you copied.
-     - `SONAR_HOST_URL`: Paste your SonarQube server URL.
+### Repository Variables
 
-### How to configure Docker Hub Credentials
+| Variable | Description |
+|---|---|
+| `DOCKERHUB_USERNAME` | Your Docker Hub username |
 
-To allow the CI pipeline to build and push images to Docker Hub:
-1. Navigate to **Settings > Secrets and variables > Actions**.
-2. Under the **Variables** tab, add:
-   - `DOCKERHUB_USERNAME`: Your Docker Hub username.
-3. Under the **Secrets** tab, add:
-   - `DOCKERHUB_TOKEN`: A Personal Access Token (PAT) generated from Docker Hub.
+---
 
+## SonarQube Setup (Self-Hosted)
 
+```bash
+docker run -itd --name SonarQube-Server -p 9000:9000 sonarqube:community
+```
+
+- Open port `9000` in your EC2 Security Group.
+- Access `http://<EC2_PUBLIC_IP>:9000` — default login: `admin` / `admin`.
+- Go to **Profile → My Account → Security → Generate Token**.
+- Add `SONAR_TOKEN` and `SONAR_HOST_URL` as GitHub repository secrets.
+
+The SonarQube project is pre-configured in [sonar-project.properties](sonar-project.properties) to scan both `backend/` and `frontend/`.
+
+---
+
+## Deployment (Self-Hosted Runner)
+
+The deploy job (`8-deploy.yml`) runs on a **self-hosted GitHub Actions runner** on your EC2 instance. It:
+
+1. Checks out the repo.
+2. Copies `.env.example` → `.env`.
+3. Logs into Docker Hub.
+4. Runs `docker compose pull && docker compose up -d` with `IMAGE_TAG=${{ github.sha }}`.
+
+---
+
+## Folder Layout
+
+```
+.
+├── .github/workflows/
+│   ├── devsecops.yaml        # main orchestrator — calls all 9 workflows
+│   ├── 1-code-lint.yml       # ESLint + go fmt + go vet
+│   ├── 2-secret-scan.yml     # Gitleaks
+│   ├── 3-dependency.yml      # npm audit + Govulncheck
+│   ├── 4-docker-checks.yml   # Hadolint + Docker build + Trivy
+│   ├── 5-sonar-qube.yml      # SonarQube SAST
+│   ├── 6-code-test.yml       # Vitest + go test
+│   ├── 7-docker-push.yml     # Docker Hub push
+│   ├── 8-deploy.yml          # Docker Compose deploy (self-hosted)
+│   └── 9-dast-scan.yml       # OWASP ZAP DAST
+├── backend/                  # Go + Gin REST API
+├── frontend/                 # React + Vite + TailwindCSS
+├── init/postgres/            # Schema + seed data (loaded on first start)
+├── docker-compose.yml
+├── Makefile
+├── .env.example
+└── sonar-project.properties
+```
