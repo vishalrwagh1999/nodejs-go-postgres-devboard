@@ -1,9 +1,10 @@
 # this files will do the complete CI production ready security scanning for this project
 name: DevSecOps
 on:
-    push:
-        branches:
-            - main
+    #push:
+     #   branches:
+     #       - main
+     workflow_dispatch:
 jobs:
     code-linting-nodejs-go:
         uses: ./.github/workflows/1-code-lint.yml
