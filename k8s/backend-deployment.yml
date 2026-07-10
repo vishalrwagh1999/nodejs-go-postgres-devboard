@@ -1,15 +1,15 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name:  devboard-frontend-deployment
+  name:  devboard-backend-deployment
   namespace: devboard
   labels:
-    app:  devboard-frontend
+    app:  devboard-backend
 spec:
   selector:
     matchLabels:
-      app: devboard-frontend
-  replicas: 2
+      app: devboard-backend
+  replicas: 1
   # strategy:
   #   rollingUpdate:
   #     maxSurge: 25%
@@ -18,21 +18,21 @@ spec:
   template:
     metadata:
       labels:
-        app:  devboard-frontend
+        app:  devboard-backend
     spec:
       containers:
-      - name: devboard-frontend
-        image: vishaldocker85/devboard-frontend:latest
+      - name: devboard-backend
+        image: vishaldocker85/devboard-backend:latest
         ports:
-          - containerPort: 4173
+          - containerPort: 8080
     # spec:
       # initContainers:
         # Init containers are exactly like regular containers, except:
           # - Init containers always run to completion.
           # - Each init container must complete successfully before the next one starts.
       # containers:
-      # - name:  devboard-frontend
-      #   image:  vishaldocker85/devboard-frontend:latest
+      # - name:  devboard-backend
+      #   image:  vishaldocker85/devboard-backend:latest
       #   resources:
       #     requests:
       #       cpu: 100m
