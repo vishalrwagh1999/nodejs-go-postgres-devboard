@@ -2,7 +2,7 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: devboard-frontend-service
+  name: devboard-frontend-service  # this dns is not hardcoded anywhere.
   namespace: devboard
 spec:
   selector:
