@@ -3,7 +3,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres
+  name: postgres # this dns is used by postgres URL hence this name not big name
   namespace: devboard
 spec:
   selector:
