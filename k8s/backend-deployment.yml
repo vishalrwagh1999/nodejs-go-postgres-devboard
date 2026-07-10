@@ -25,6 +25,32 @@ spec:
         image: vishaldocker85/devboard-backend:latest
         ports:
           - containerPort: 8080
+        env:
+            - name: POSTGRES_DB            # Name inside the container
+              valueFrom:
+                secretKeyRef:
+                  name: devboard-secrets                # Name of your Secret file meta
+                  key: POSTGRES_DB                      # Key inside the Secret
+
+            - name: POSTGRES_PASSWORD      # Name inside the container
+              valueFrom:
+                secretKeyRef:
+                  name: devboard-secrets                # Name of your Secret file meta
+                  key: POSTGRES_PASSWORD                # Key inside the Secret
+
+            - name: POSTGRES_USER          # Name inside the container 
+              valueFrom:  
+                configMapKeyRef:
+                  name: devboard-configmap              # Name of your ConfigMap file meta
+                  key: POSTGRES_USER                    # Key inside the ConfigMap
+            
+            - name: POSTGRES_URL
+              value: postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@postgres:5432/$(POSTGRES_DB)?sslmode=disable
+
+            - name: BACKEND_PORT
+              value: "8080" # or we can add this in config map as well. and use conggMapKeyRef block.
+                
+
     # spec:
       # initContainers:
         # Init containers are exactly like regular containers, except:

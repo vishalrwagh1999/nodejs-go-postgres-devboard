@@ -25,6 +25,31 @@ spec:
         image: postgres:16-alpine
         ports:
           - containerPort: 5432
+        env:
+          - name: POSTGRES_DB            # Name inside the container
+            valueFrom:
+              secretKeyRef:
+                name: devboard-secrets                # Name of your Secret file meta
+                key: POSTGRES_DB                      # Key inside the Secret
+
+          - name: POSTGRES_PASSWORD      # Name inside the container
+            valueFrom:
+              secretKeyRef:
+                name: devboard-secrets                # Name of your Secret file meta
+                key: POSTGRES_PASSWORD                # Key inside the Secret
+
+          - name: POSTGRES_USER          # Name inside the container 
+            valueFrom:  
+              configMapKeyRef:
+                name: devboard-configmap              # Name of your ConfigMap file meta
+                key: POSTGRES_USER                    # Key inside the ConfigMap
+          
+    volumes:
+      - name: init  #any volume name
+        configMap: postgres-init   #from configmap-ini.yml meta
+
+
+          
     # spec:
       # initContainers:
         # Init containers are exactly like regular containers, except:

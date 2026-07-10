@@ -14,9 +14,9 @@ spec:
   ports:
   - name: devboard-postgres  # by default clusterIp it takes
     protocol: TCP
-    port: 8080 # BE clusterIp connects to the FE SVC-service that port is here. not exposed port for fronend BE port only same prot hence 8080. svc and exposed.
-    targetPort: 8080  #pod ka port
-  #8080 ec2 >> svc FE 30080 >> 4173 FE pod >> svc FE 30080 >> SVC BE 8080 >> deploy BE 8080
+    port: 5432  #svc port # BE clusterIp connects to the FE SVC-service that port is here. not exposed port for fronend BE port only same prot hence 8080. svc and exposed.
+    targetPort: 5432  #pod ka port
+  #8080 ec2 >> svc FE 30080 >> 4173 FE pod >> svc FE 30080 >> SVC BE 8080 >> deploy BE 8080 >> svc db 5432 >> deplyment container pod 5432
 
     # If you set the `spec.type` field to `NodePort` and you want a specific port number,
     # you can specify a value in the `spec.ports[*].nodePort` field.
