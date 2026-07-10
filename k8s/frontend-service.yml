@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: devboard-frontend-service
+  namespace: devboard
+spec:
+  selector:
+    app: devboard-frontend
+  type: NodePort
+  # sessionAffinity: None
+  # sessionAffinityConfig:
+  #   clientIP:
+  #     timeoutSeconds: 10800
+  ports:
+  - name: devboard-frontend
+    protocol: TCP
+    port: 8080       # exposed app on this port
+    targetPort: 4173  #pod ka port
+    # If you set the `spec.type` field to `NodePort` and you want a specific port number,
+    # you can specify a value in the `spec.ports[*].nodePort` field.
+    nodePort: 30080  # Node ka port
