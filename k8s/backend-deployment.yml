@@ -47,7 +47,7 @@ spec:
             - name: POSTGRES_URL
               value: postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@postgres:5432/$(POSTGRES_DB)?sslmode=disable
 
-            - name: BACKEND_PORT
+            - name: PORT #BACKEND_PORT
               value: "8080" # or we can add this in config map as well. and use conggMapKeyRef block.
                 
 
